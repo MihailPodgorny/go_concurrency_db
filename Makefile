@@ -17,6 +17,10 @@ fmt: ## Formats all code with go fmt
 	@go fmt ./...
 	@go imports ./...
 
+tidy:
+	go mod tidy
+	go mod vendor
+
 run: fmt ## Run a controller from your host
 	@go run ./main.go
 

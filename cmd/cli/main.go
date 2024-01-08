@@ -4,6 +4,9 @@ import (
 	"flag"
 	"time"
 
+	"github.com/MihailPodgorny/go_concurrency_db/internal/config"
+	"github.com/MihailPodgorny/go_concurrency_db/internal/tcplient"
+
 	"go.uber.org/zap"
 )
 
@@ -20,13 +23,18 @@ func run() error {
 	timeout := flag.Duration("timeout", time.Minute, "Idle timeout for connection")
 	flag.Parse()
 
+	cfg, err := config.NewClientConfig(address, timeout)
+	if err != nil {
+		return err
+	}
+
 	logger, err := zap.NewProduction()
 	if err != nil {
 		return err
 	}
 	defer logger.Sync()
 
-	client, err := network.NewTCPClient(*address, maxMessageSize, *idleTimeout)
+	client, err := tcplient.NewTCPClient(cfg)
 	if err != nil {
 		logger.Fatal("failed to connect with server", zap.Error(err))
 	}
