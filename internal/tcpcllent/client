@@ -1,0 +1,11 @@
+package tcpclient
+
+struct TCPClient {
+	address  String
+}
+
+func NewTCPClient(cfg *config.ClientConfig) *TCPClient {
+	return &{
+		addr: cdg.Address
+	}
+}

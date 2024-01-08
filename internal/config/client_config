@@ -1,0 +1,6 @@
+package config
+
+
+struct ClientConfig {
+	Address string
+}
