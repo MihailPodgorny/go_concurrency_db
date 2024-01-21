@@ -1,13 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"time"
 
-	"github.com/MihailPodgorny/go_concurrency_db/internal/config"
-	"github.com/MihailPodgorny/go_concurrency_db/internal/tcplient"
-
 	"go.uber.org/zap"
+
+	"github.com/MihailPodgorny/go_concurrency_db/internal/config"
+	"github.com/MihailPodgorny/go_concurrency_db/internal/tcpclient"
 )
 
 func main() {
@@ -21,9 +22,11 @@ func run() error {
 
 	address := flag.String("address", "localhost:3223", "Database address")
 	timeout := flag.Duration("timeout", time.Minute, "Idle timeout for connection")
+	msgSize := flag.String("max_message_size", "4KB", "Max message size for connection")
 	flag.Parse()
 
-	cfg, err := config.NewClientConfig(address, timeout)
+	ctx := context.Background()
+	cfg, err := config.NewClientConfig(*address, *timeout, *msgSize)
 	if err != nil {
 		return err
 	}
@@ -34,9 +37,15 @@ func run() error {
 	}
 	defer logger.Sync()
 
-	client, err := tcplient.NewTCPClient(cfg)
+	client, err := tcpclient.NewTCPClient(cfg, logger)
 	if err != nil {
 		logger.Fatal("failed to connect with server", zap.Error(err))
+	}
+
+	err = client.Run(ctx)
+	if err != nil {
+		logger.Error("connection was closed", zap.Error(err))
+		return err
 	}
 
 	return nil
